@@ -9,7 +9,7 @@
     "webpack-cli": "^5.0.1"
   },
   "scripts": {
-    "build": "webpack ./src/index.js --output-path ../wwwroot/js --output-filename index.bundle.js"
+    "build": "webpack --entry ./src/index.js --output-path ../wwwroot/js --output-filename index.bundle.js"
   },
   "keywords": [],
   "author": "",
