@@ -1,0 +1,25 @@
+﻿@page "/KaraokePlayer"
+@inject IJSRuntime JSRuntime
+
+<h3>KaraokePlayer</h3>
+Enter text:
+<input @bind="testString" />
+<button class="btn btn-primary" @onclick="LoadClickButton">Load</button>
+<button class="btn btn-primary" @onclick="PlayClickButton">Play</button>
+<canvas id="karaoke-display" width="600" height="432" style="border: 1px solid black;">
+</canvas>
+@code {
+    private string testString { get; set; } = "./cdg/Katy Perry - Dark Horse.cdg";
+
+    private async void LoadClickButton()
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+        await jsModule.InvokeVoidAsync("LoadFile", testString);
+    }
+
+    private async void PlayClickButton()
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+        await jsModule.InvokeVoidAsync("StartPlayer");
+    }
+}
