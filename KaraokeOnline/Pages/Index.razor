@@ -1,13 +1,9 @@
 ﻿@page "/"
 @inject IJSRuntime JS
 
-<PageTitle>Index</PageTitle>
-
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
 <canvas id="canvas" width="600" height="432"></canvas>
 <button @onclick="PlayPause">@PlayPauseString</button>
+<SyncComponent />
 <KaraokePlayer />
 <!-- 
     - Create a component for video
@@ -16,6 +12,9 @@ Welcome to your new app.
     - Controls are also shown?
     - Open file
     - time = 0
+    - Create a component to sync the audio to the lyrics.
+    - This component loads an audio file
+    - Also loads a text file with sync data
     - 
 -->
 

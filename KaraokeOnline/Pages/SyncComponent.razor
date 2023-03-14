@@ -1,0 +1,33 @@
+﻿@page "/SyncAudio"
+@inject IJSRuntime JSRuntime
+
+<h3>SyncComponent</h3>
+<!--
+    - Audio loader
+    - Audio player
+    - Text box input
+    - Converted text box
+    - Video preview
+    - Auto save state?
+    -
+-->
+
+<InputFile @ref="inputFile" OnChange="@LoadFiles" />
+@if (inputFile != null)
+{
+    <audio id="song">
+        <source src="@AudioElement" type="audio/mpeg" />
+    </audio>
+}
+@code {
+    private InputFile? inputFile;
+    private ElementReference AudioElement;
+
+    private async Task LoadFiles()
+    {
+        Console.WriteLine("hello");
+        
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+        await jsModule.InvokeVoidAsync("CreateUrlFromFile", inputFile, AudioElement); 
+    }
+}
