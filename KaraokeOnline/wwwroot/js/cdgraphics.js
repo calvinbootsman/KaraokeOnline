@@ -1,18 +1,17 @@
-var player = new CDGPlayer(document.getElementById('karaoke-display'));
+var player = null;
 
+export function InitPlayer(ElementId) {
+    player = new CDGPlayer(document.getElementById(ElementId));
+}
 export function LoadFile(file) {
-    player.load(file);
+    if (player != null) {
+        player.load(file);
+    }
 };
 export function StartPlayer(file) {
-    player.play();
-};
-
-window.CreateUrlFromFile = (inputElem, imgElem) => {
-    const url = URL.createObjectURL(inputElem.files[0]);
-    console.log("hey");
-    imgElem.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
-    console.log("hey");
-    imgElem.src = url;
+    if (player != null) {
+        player.play();
+    }
 };
 
 var cdgLog = function (message) {
@@ -602,7 +601,7 @@ CDGPlayer.prototype.play = function () {
 };
 
 CDGPlayer.prototype.stop = function () {
-    if (this.updater != null) {
+    if (this.updater != null) {x 
         clearInterval(this.updater);
     }
 };

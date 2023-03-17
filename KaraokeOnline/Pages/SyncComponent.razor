@@ -12,22 +12,13 @@
     -
 -->
 
-<InputFile @ref="inputFile" OnChange="@LoadFiles" />
-@if (inputFile != null)
-{
-    <audio id="song">
-        <source src="@AudioElement" type="audio/mpeg" />
-    </audio>
-}
 @code {
     private InputFile? inputFile;
     private ElementReference AudioElement;
-
+    public string? audioUrl;
     private async Task LoadFiles()
     {
         Console.WriteLine("hello");
-        
-        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
-        await jsModule.InvokeVoidAsync("CreateUrlFromFile", inputFile, AudioElement); 
+        audioUrl = new(await JSRuntime.InvokeAsync<string>("CreateUrlFromFile", inputFile));
     }
 }

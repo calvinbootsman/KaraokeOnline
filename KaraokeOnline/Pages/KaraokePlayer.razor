@@ -1,15 +1,51 @@
 ﻿@page "/KaraokePlayer"
 @inject IJSRuntime JSRuntime
 
+
 <h3>KaraokePlayer</h3>
-Enter text:
-<input @bind="testString" />
-<button class="btn btn-primary" @onclick="LoadClickButton">Load</button>
-<button class="btn btn-primary" @onclick="PlayClickButton">Play</button>
+<div>
+    <InputFile @ref="inputFile" OnChange="@LoadAudioFile" />
+</div>
+
+
+<div>
+    <input @bind="testString" />
+    <button class="btn btn-primary" @onclick="LoadClickButton">Load</button>
+    <button class="btn btn-primary" @onclick="PlayClickButton">Play</button>
+</div>
+
 <canvas id="karaoke-display" width="600" height="432" style="border: 1px solid black;">
 </canvas>
+
+@if ((playAudio == true) && (audioUrl != null) && (audioUrl != ""))
+{
+    <div>
+
+        <audio autoplay id="song">
+            <source src="@audioUrl" type="audio/mpeg" />
+        </audio>
+    </div>
+
+}
 @code {
+    private InputFile? inputFile;
+    public string? audioUrl;
+    private bool playAudio { get; set; } = false;
+
     private string? testString { get; set; } = "./cdg/Katy Perry - Dark Horse.cdg";
+    private string canvasId = "karaoke-display";
+
+    private async Task LoadAudioFile()
+    {
+        Console.WriteLine("hello");
+        audioUrl = new(await JSRuntime.InvokeAsync<string>("CreateUrlFromFile", inputFile));
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+        await jsModule.InvokeVoidAsync("InitPlayer", canvasId);
+    }
 
     private async void LoadClickButton()
     {
@@ -19,7 +55,8 @@ Enter text:
 
     private async void PlayClickButton()
     {
+        playAudio = true;
         var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
-        await jsModule.InvokeVoidAsync("StartPlayer");
+        await jsModule.InvokeVoidAsync("StartPlayer");        
     }
 }
