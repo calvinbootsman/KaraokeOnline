@@ -2,6 +2,13 @@
 @inject IJSRuntime JSRuntime
 @using System.Timers;
 
+<!--
+    There should be 4 options:
+        - provide the files when calling this component
+        - select a .zip
+        - select everything manually
+        - use the debugging options where everything get's selected automatically.
+-->
 
 <h3>KaraokePlayer</h3>
 <div>
@@ -15,12 +22,17 @@
     <button class="btn btn-primary" @onclick="PlayClickButton">Play</button>
     <button class="btn btn-primary" @onclick="StepClickButton">Step</button>
 </div>
-<div>
-    <label>Steps per second: </label>
-    <input type="number" @bind="stepsPerSecond"/>
-    <button class="btn btn-primary" @onclick="StartStepClickButton">@startStopSecondString</button>
-</div>
-<div style="background-color: black; width:610px;">
+
+@if (UseDebugValue)
+{
+    <div>
+        <label>Steps per second: </label>
+        <input type="number" @bind="stepsPerSecond"/>
+        <button class="btn btn-primary" @onclick="StartStepClickButton">@startStopSecondString</button>
+    </div>
+}
+
+<div style="background-color: black; width:610px; ">
     <canvas id="karaoke-display" width="600" height="432" style="border: 1px solid black;" />
 </div>
 
@@ -34,8 +46,30 @@
 }
 
 @code {
+    [Parameter]
+    public bool UseDebugValue { get; set; } = false;
+
+    [Parameter]
+    public string CDGFileLocation { get; set; } = "";
+
+    [Parameter]
+    public string Mp3FileLocation { get; set; } = "";
+
+    [Parameter]
+    public bool AutoLoadCdgPlayer { get; set; } = false;
+
+    [Parameter]
+    public InputFile? AudioFile { get; set; }
+
+    [Parameter]
+    public InputFile? CDGFile{ get; set; }
+
+
     private InputFile? inputFile;
-    public string? audioUrl;
+
+    private string? audioUrl;
+    private string? cdgUrl;
+
     private bool playAudio { get; set; } = false;
 
     private string? testString { get; set; } = "./cdg/Maroon 5 - Sugar.cdg";
@@ -49,7 +83,6 @@
 
     private async Task LoadAudioFile()
     {
-        Console.WriteLine("hello");
         audioUrl = new(await JSRuntime.InvokeAsync<string>("CreateUrlFromFile", inputFile));
     }
 
@@ -61,7 +94,6 @@
 
     private async void LoadClickButton()
     {
-
         var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
         loaded = await jsModule.InvokeAsync<bool>("LoadFile", testString);
     }
