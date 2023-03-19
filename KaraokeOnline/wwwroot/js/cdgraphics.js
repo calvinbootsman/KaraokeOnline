@@ -3,14 +3,25 @@ var player = null;
 export function InitPlayer(ElementId) {
     player = new CDGPlayer(document.getElementById(ElementId));
 }
-export function LoadFile(file) {
+export async function LoadFile(file) {
+    var succeeded = false;
     if (player != null) {
-        player.load(file);
+       succeeded =  await player.load(file);
     }
+
+    return succeeded;
 };
+
 export function StartPlayer(file) {
     if (player != null) {
         player.play();
+    }
+};
+
+export function StepPlayer(file) {
+    if (player != null) {
+        player.step();
+        player.render();
     }
 };
 
@@ -545,8 +556,9 @@ CDGPlayer.prototype.init = function (canvas) {
     this.updater = null;
     this.startTime = 0;
 };
-CDGPlayer.prototype.load = function (url) {
-    $.ajax({
+CDGPlayer.prototype.load = async function (url) {
+    let succeeded = false;
+    await $.ajax({
         url: url,
         beforeSend: function (xhr) {
             xhr.overrideMimeType('text/plain; charset=x-user-defined');
@@ -556,12 +568,14 @@ CDGPlayer.prototype.load = function (url) {
             var parser = new CDGParser();
             this.instructions = parser.parseDataString(data);
             this.pc = 0;
+            succeeded = true;
         },
         error: function (xhr, status, error) {
             cdgLog("error loading cdg from url " + url);
         },
-
     });
+
+    return succeeded;
 };
 
 CDGPlayer.prototype.render = function () {
@@ -601,7 +615,8 @@ CDGPlayer.prototype.play = function () {
 };
 
 CDGPlayer.prototype.stop = function () {
-    if (this.updater != null) {x 
+    if (this.updater != null) {
+        x
         clearInterval(this.updater);
     }
 };

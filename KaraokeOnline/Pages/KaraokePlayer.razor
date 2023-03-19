@@ -1,5 +1,6 @@
 ﻿@page "/KaraokePlayer"
 @inject IJSRuntime JSRuntime
+@using System.Timers;
 
 
 <h3>KaraokePlayer</h3>
@@ -12,28 +13,39 @@
     <input @bind="testString" />
     <button class="btn btn-primary" @onclick="LoadClickButton">Load</button>
     <button class="btn btn-primary" @onclick="PlayClickButton">Play</button>
+    <button class="btn btn-primary" @onclick="StepClickButton">Step</button>
 </div>
-
-<canvas id="karaoke-display" width="600" height="432" style="border: 1px solid black;">
-</canvas>
+<div>
+    <label>Steps per second: </label>
+    <input type="number" @bind="stepsPerSecond"/>
+    <button class="btn btn-primary" @onclick="StartStepClickButton">@startStopSecondString</button>
+</div>
+<div style="background-color: black; width:610px;">
+    <canvas id="karaoke-display" width="600" height="432" style="border: 1px solid black;" />
+</div>
 
 @if ((playAudio == true) && (audioUrl != null) && (audioUrl != ""))
 {
     <div>
-
         <audio autoplay id="song">
             <source src="@audioUrl" type="audio/mpeg" />
         </audio>
     </div>
-
 }
+
 @code {
     private InputFile? inputFile;
     public string? audioUrl;
     private bool playAudio { get; set; } = false;
 
-    private string? testString { get; set; } = "./cdg/Katy Perry - Dark Horse.cdg";
+    private string? testString { get; set; } = "./cdg/Maroon 5 - Sugar.cdg";
     private string canvasId = "karaoke-display";
+    private bool loaded = false;
+
+    private uint stepsPerSecond = 50;
+    private string startStopSecondString = "Start stepping";
+    private bool isStepping = false;
+    private Timer stepTimer =  new Timer(1000);
 
     private async Task LoadAudioFile()
     {
@@ -49,14 +61,63 @@
 
     private async void LoadClickButton()
     {
+
         var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
-        await jsModule.InvokeVoidAsync("LoadFile", testString);
+        loaded = await jsModule.InvokeAsync<bool>("LoadFile", testString);
     }
 
     private async void PlayClickButton()
     {
-        playAudio = true;
-        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
-        await jsModule.InvokeVoidAsync("StartPlayer");        
+        if (loaded)
+        {
+            playAudio = true;
+            var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+            await jsModule.InvokeVoidAsync("StartPlayer");
+        }
+    }
+
+    private async void StepClickButton()
+    {
+        if (loaded)
+        {
+            var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+            await jsModule.InvokeVoidAsync("StepPlayer");
+        }
+    }
+
+    private async void StartStepClickButton()
+    {
+        if (isStepping == false)
+        {
+            double interval = 1.0 / ((float)stepsPerSecond);
+            stepTimer = new Timer(interval * 1000);
+            stepTimer.Elapsed += NextStep;
+            stepTimer.Enabled = true;
+            isStepping = true;
+            startStopSecondString = "Stop stepping" ;
+        }
+        else
+        {
+            stepTimer.Enabled = false;
+            isStepping = false;
+            startStopSecondString = "Start stepping";
+        }
+
+        if (loaded)
+        {
+            var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+            await jsModule.InvokeVoidAsync("StepPlayer");
+
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async void NextStep(Object source, System.Timers.ElapsedEventArgs e)
+    {
+        if (loaded)
+        {
+            var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+            await jsModule.InvokeVoidAsync("StepPlayer");
+        }
     }
 }
