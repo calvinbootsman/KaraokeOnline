@@ -12,13 +12,32 @@ export async function LoadFile(file) {
     return succeeded;
 };
 
-export function StartPlayer(file) {
+export function StartPlayer() {
     if (player != null) {
         player.play();
     }
 };
 
-export function StepPlayer(file) {
+export function PausePlayer() {
+    if (player != null) {
+        player.stop();
+    }
+};
+
+export function ContinuePlayer() {
+    if (player == null) return;
+
+    player.continue();
+}
+
+export function StopPlayer() {
+    if (player == null) return;
+
+    player.stop();
+    player.setPc(0);
+    player.render();
+}
+export function StepPlayer() {
     if (player != null) {
         player.step();
         player.render();
@@ -553,6 +572,7 @@ CDGPlayer.prototype.init = function (canvas) {
     this.context = new CDGContext();
     this.instructions = [];
     this.pc = -1;
+    this.ticksAtPause = -1;
     this.updater = null;
     this.startTime = 0;
 };
@@ -616,10 +636,21 @@ CDGPlayer.prototype.play = function () {
 
 CDGPlayer.prototype.stop = function () {
     if (this.updater != null) {
-        x
         clearInterval(this.updater);
     }
+
+    this.ticksAtPause = this.playerTicks();
 };
+
+CDGPlayer.prototype.setPc = function (value) {
+    this.pc = value;
+}
+
+CDGPlayer.prototype.continue = function () {
+    this.startTime = this.rawTicks() - this.ticksAtPause;
+    var thisPlayer = this;
+    this.updater = setInterval(function () { thisPlayer.update(); }, 50);
+}
 
 CDGPlayer.prototype.update = function () {
     if (this.pc >= 0) {
