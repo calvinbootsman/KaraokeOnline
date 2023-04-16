@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components;
+using KaraokeOnline.Controller;
 
 namespace KaraokeOnline.Models
 {
@@ -14,10 +15,14 @@ namespace KaraokeOnline.Models
 
         public KaraokePlayerModel(InputFile audioFile, InputFile cdgFile)
         {
+            if (KaraokeFilesController.ValidAudioFile(audioFile) == false) throw new ArgumentException("Invalid audio file");
+            if (KaraokeFilesController.ValidCDGFile(cdgFile) == false) throw new ArgumentException("Invalid CDG file");
+
             AutoLoadCdgPlayer = true;
             AudioFile = audioFile;
             CDGFile = cdgFile;
         }
+        public bool LoadFieldIsVisible { get; set; } = false;
         public bool UseDebugValue { get; } = false;
         public string CDGFileLocation { get; } = "";
         public string Mp3FileLocation { get; } = "";

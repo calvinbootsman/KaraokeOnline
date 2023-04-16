@@ -11,7 +11,15 @@ namespace KaraokeOnline.Controller
                 return false;
             }
 
-        
+            return true;
+        }
+
+        public static bool ValidCDGFile(InputFile inputFile)
+        {
+            if (inputFile == null)
+            {
+                return false;
+            }
             return true;
         }
     }

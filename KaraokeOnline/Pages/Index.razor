@@ -1,6 +1,7 @@
 ﻿@page "/"
+@using Models
 @inject IJSRuntime JS
-<KaraokePlayer />
+<KaraokePlayer karaokeModel="playerModel"/>
 <!-- 
     - Create a component for video
     - Use parameters to get the mp3 and cdg file
@@ -15,18 +16,6 @@
 -->
 
 @code {
-    string PlayPauseString = "Play";
+    private KaraokePlayerModel playerModel = new KaraokePlayerModel("./cdg/Maroon 5 - Sugar.cdg", "./cdg/Maroon 5 - Sugar.cdg");
 
-    async void PlayPause()
-    {
-        if (PlayPauseString == "Play") {
-            PlayPauseString = "Pause";
-        }
-        else {
-            PlayPauseString = "Play";
-        }
-
-        object test = await JS.InvokeAsync<object>("renderFrames", 100);
-
-    }
 }

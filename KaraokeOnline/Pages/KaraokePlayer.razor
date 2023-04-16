@@ -17,7 +17,7 @@
 
 
 <div>
-    <input @bind="testString" />
+    <input @bind="cdgFileLocation" />
     <button class="btn btn-primary" @onclick="LoadClickButton">Load</button>
 
     @switch (playerState)
@@ -68,7 +68,7 @@
     public KaraokePlayerModel? karaokeModel { get; set; }
     private enum PlayerState
     {
-        NoFileIsNotLoaded,
+        NoFileIsLoaded,
         Paused,
         Playing,
         Stopped
@@ -80,7 +80,7 @@
 
     //private bool playAudio { get; set; } = false;
 
-    private string? testString { get; set; } = "./cdg/Maroon 5 - Sugar.cdg";
+    private string? cdgFileLocation { get; set; } = "./cdg/Maroon 5 - Sugar.cdg";
     private string canvasId = "karaoke-display";
     //private bool loaded = false;
 
@@ -89,7 +89,7 @@
     private bool isStepping = false;
     private Timer stepTimer = new Timer(1000);
     // private bool isPlaying = false;
-    private PlayerState playerState = PlayerState.NoFileIsNotLoaded;
+    private PlayerState playerState = PlayerState.NoFileIsLoaded;
     private async Task LoadAudioFile()
     {
         audioUrl = new(await JSRuntime.InvokeAsync<string>("CreateUrlFromFile", inputFile));
@@ -99,18 +99,26 @@
     {
         var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
         await jsModule.InvokeVoidAsync("InitPlayer", canvasId);
+        if (karaokeModel is not null)
+        {
+            if (karaokeModel.CDGFileLocation is not null)
+            {
+                cdgFileLocation = karaokeModel.CDGFileLocation;
+                LoadClickButton();
+            }
+        }
     }
 
     private async void LoadClickButton()
     {
         var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
-        if (await jsModule.InvokeAsync<bool>("LoadFile", testString) == true)
+        if (await jsModule.InvokeAsync<bool>("LoadFile", cdgFileLocation) == true)
         {
             playerState = PlayerState.Stopped;
         }
         else
         {
-            playerState = PlayerState.NoFileIsNotLoaded;
+            playerState = PlayerState.NoFileIsLoaded;
         }        
         await InvokeAsync(StateHasChanged);
     }
