@@ -1,0 +1,218 @@
+﻿@page "/LyricsSync"
+@using Controller
+
+@if (currentState == SyncState.InputText)
+{
+    <div>
+        <h1>Input Text</h1>
+
+        <form>
+            <textarea @bind="lyricsText" style="width:400px;height:400px;" />
+            <button @onclick="GoToSyncTextState">Next</button>
+            <!-- Add mp3 file loading-->
+        </form>
+    </div>
+}
+
+@if (currentState == SyncState.SyncText)
+{  
+    <div @ref="KeyPressDiv" @onkeydown="KeyPress" @onkeyup="KeyPress" tabindex="0">
+        @for (int i = 0; i < SHOW_LINES; i++)
+        {
+            if ((currentLine + i ) < lyricsAsLines.Count)
+            {
+                <!-- How can the cursor location be shown?
+                    how can the other lyrics be shown red or black
+                -->
+                <h1>@lyricsAsLines[currentLine + i]</h1>
+            }
+        } 
+    </div>
+
+    <!--
+        Would be nice to have something on the top where the lyrics are displayed in a nicer way
+        maybe in a way that only show a couple of lines
+        Then below some controls.
+    -->
+}
+
+@code {
+        /* Unsure how this is supposed to work yet
+        * 1. user inputs the text.
+        * 2. user inputs the audio file.
+        * 3. user should be able to set the playback speed
+        * 4. when starting to play, pressing the spacebar would go to the next word
+        * 5. when pressing ctrl + spacebar, the next character
+        *
+        * a beginning and end should be given.
+        * the shift key can be used to give more control over the timing
+        * this will be encoded as follows:
+        * [start time]lorem ipsem[end time]
+        * [start time]l[end time]
+        * [start time]o[end time]
+        *
+        * so when starting press the shift key to say you want to start
+        * then pressing the (ctrl + ) space bar will set the end time.
+        * The end time will be the start time of the next word/character.
+        * unless the shift key is pressed.
+        *
+        * so this means:
+        *      - shift is start time
+        *      - spacebar is end time
+        */
+
+    private const int SHOW_LINES = 6;
+
+    private enum SyncState
+    {
+        InputText,
+        SyncText
+    }
+    private List<MarkupString> lyricsAsLines = new List<MarkupString>();
+    private SyncState currentState = SyncState.InputText;
+    private int currentLine = 0;
+    private int cursorLocation = 0;
+    private ElementReference KeyPressDiv;
+    private List<string> KeysThatArePressed = new List<string>();
+    LyricsSyncController syncController = new LyricsSyncController();
+
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (currentState == SyncState.SyncText)
+        {
+            await KeyPressDiv.FocusAsync();
+        }
+
+    }
+    private void GoToSyncTextState()
+    {
+        if (lyricsText is null) return;
+        if (lyricsText == "") return;
+
+        List<string> lyricsAsLinesString = lyricsText.Split("\n").ToList();
+        foreach (string s in lyricsAsLinesString)
+        {
+            lyricsAsLines.Add(new MarkupString(s));
+        }
+        syncController.AddLyrics(lyricsText);
+        currentState = SyncState.SyncText;
+        UpdateLyricScroller();
+    }
+
+    private void KeyPress(KeyboardEventArgs e)
+    {
+        int? nextCursorLocation = syncController.OnKeyAction(e, 0, cursorLocation);
+        if (nextCursorLocation == null) return;
+        cursorLocation = nextCursorLocation.Value;
+        UpdateLyricScroller();
+    }
+
+    private async void UpdateLyricScroller()
+    {
+        if (currentState != SyncState.SyncText) return;
+        if (lyricsText is null) return; 
+
+        lyricsAsLines.Clear();
+        lyricsAsLines = syncController.MarkupTheLyrics(lyricsText, cursorLocation);
+
+        await InvokeAsync(StateHasChanged);
+    }
+    private string? lyricsText = @"I'm hurting, baby, I'm broken down
+I need your loving, loving
+I need it now
+When I'm without you
+I'm something weak
+You got me begging, begging
+I'm on my knees
+
+I don't wanna be needing your love
+I just wanna be deep in your love
+And it's killing me when you're away, ooh, baby
+'Cause I really don't care where you are
+I just wanna be there where you are
+And I gotta get one little taste
+
+Your sugar
+Yes, please
+Won't you come and put it down on me?
+I'm right here, 'cause I need
+Little love, a little sympathy
+Yeah, you show me good loving
+Make it alright
+Need a little sweetness in my life
+Your sugar
+Yes, please
+Won't you come and put it down on me?
+
+My broken pieces
+You pick them up
+Don't leave me hanging, hanging
+Come give me some
+When I'm without ya
+I'm so insecure
+You are the one thing, one thing
+I'm living for
+
+I don't wanna be needing your love
+I just wanna be deep in your love
+And it's killing me when you're away, ooh, baby
+'Cause I really don't care where you are
+I just wanna be there where you are
+And I gotta get one little taste
+
+Your sugar
+Yes, please
+Won't you come and put it down on me?
+I'm right here
+'Cause I need
+Little love, a little sympathy
+Yeah, you show me good loving
+Make it alright
+Need a little sweetness in my life
+Your sugar! (sugar!)
+Yes, please (yes, please)
+Won't you come and put it down on me?
+
+Yeah
+I want that red velvet
+I want that sugar sweet
+Don't let nobody touch it
+Unless that somebody's me
+I gotta be your man
+There ain't no other way
+'Cause girl you're hotter than a southern California day
+
+I don't wanna play no games
+You don't gotta be afraid
+Don't give me all that shy shit
+No make-up on
+That's my
+
+Sugar
+Yes, please (please)
+Won't you come and put it down on me (down on me)?
+I'm right here (right here), 'cause I need ('cause I need)
+Little love, a little sympathy
+So, baby, (yeah) you show me good loving
+Make it alright
+Need a little sweetness in my life
+Your sugar! (sugar!)
+Yes, please (yes, please)
+Won't you come and put it down on me? (Down on me)
+
+Sugar
+Yes, please
+Won't you come and put it down on me? (Down on me!)
+I'm right here, 'cause I need (I'm right here, 'cause I need)
+Little love, a little sympathy
+Yeah, you show me good loving
+Make it alright
+Need a little sweetness in my life
+
+Your sugar! (sugar!)
+Yes, please (yes, please)
+Won't you come and put it down on me? (down on me, down on me)
+
+
+";
+}
