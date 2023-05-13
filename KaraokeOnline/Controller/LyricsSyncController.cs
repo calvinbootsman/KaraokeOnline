@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.Logging.Abstractions;
+using System.ComponentModel;
 using System.Text.RegularExpressions;
 
 namespace KaraokeOnline.Controller
@@ -50,6 +52,7 @@ namespace KaraokeOnline.Controller
                     case "Shift ": // start time of encoded lyric
                         break;
                     case " ": // move a word forward
+                        return GetNextWordPosition(currentLocation);
                         break;
                     case "Control ": // move a single character forward
                         int? test = GetNextAlphabetCharacterPosition(currentLocation);
@@ -73,45 +76,68 @@ namespace KaraokeOnline.Controller
 
         private int? GetNextAlphabetCharacterPosition(int startLocation)
         {
-            int outputLocation = startLocation;
             string remainingLyrics = lyrics.Substring(startLocation);
             remainingLyrics.TrimStart();
 
-            bool foundFirstCharacter = true;
-
             for (int i = 0; i < remainingLyrics.Length; i++)
             {
-                if (foundFirstCharacter == false)
+                if (Char.IsLetter(remainingLyrics[i]))
                 {
-                    if (Regex.IsMatch(remainingLyrics[i].ToString(), @"^[a-zA-Z]+$"))
-                    {
-                        foundFirstCharacter = true;
-                    }
-                }
-                if (foundFirstCharacter == true)
-                {
-                    /* what to do here?
-                     * what should the function return?
-                     * make this class stateless?
-                     * maybe return the location
-                     * 
-                     * */
-
-                    switch (remainingLyrics[i])
-                    {
-                        case ' ': continue; 
-                        case '\n': continue;
-                        case '\r': continue;
-                        default:  /* found a character*/
-                            return (startLocation + i);
-                            break;
-                    }
+                    return (startLocation + i + 1);
                 }
             }
 
             return null;
         }
 
+        private int? GetNextWordPosition(int startLocation)
+        {            
+            int? output = null;
+            bool foundWhiteSpace = false;
+
+            // First go the first next chararcter position
+            // Because that's whehre the next word starts.
+            // This makes you skip the additional whitespace characters, like \r \n
+            int? newStartLocation = GetNextAlphabetCharacterPosition(startLocation);
+            if (newStartLocation is null) return null;
+
+            string remainingLyrics = lyrics.Substring((int)newStartLocation);
+            remainingLyrics.TrimStart();
+
+            for (int i = 0; i < remainingLyrics.Length; i++)
+            {
+                if (Char.IsWhiteSpace(remainingLyrics[i]))
+                {
+                    if (foundWhiteSpace)
+                    {
+                        // We found a witespace already
+                        // And now we found another white space
+                        // For example at \r \n
+                        // We can skip until we found the next alphabetic character
+                        // Except we get the next alphabetic character position + 1
+                        // So we subtract 1
+                        output = GetNextAlphabetCharacterPosition((int)newStartLocation + i) - 1;
+                    }
+                    else
+                    {
+                        // We found the end of the word
+                        // But we want to skip the next comning whitespaces as well.
+                        // That's why we don't return yet.
+                        foundWhiteSpace = true;
+                        output = ((int)newStartLocation + i + 1);
+                    }                    
+                }
+                else
+                {
+                    if (foundWhiteSpace == true)
+                    {
+                        return output;
+                    }
+                }
+            }
+
+            return null;
+        }
         public MarkupString MoveToNextCharacter(MarkupString currentText)
         {
             return new MarkupString("");
@@ -140,7 +166,7 @@ namespace KaraokeOnline.Controller
                     for (int i = 0; i < length; i++)
                     {
                         s += line[i];
-                        if ((indexLocation + i) == location)
+                        if ((indexLocation + i + 1) == location)
                         {
                             s += "</span>";
                         }
@@ -152,7 +178,9 @@ namespace KaraokeOnline.Controller
                     s = line;
                 }
                 markedUpLyrics.Add(new MarkupString(s));
-                indexLocation += line.Length;
+
+                // We add 1 to include the removed \n
+                indexLocation += line.Length + 1;
             }
 
             return markedUpLyrics;
