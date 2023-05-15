@@ -22,10 +22,10 @@ namespace KaraokeOnline.Controller
         {
             if (e.Type == "keydown")
             {
-                // Shift key can only set the start time when there are not other keys pressed.
-                // Control has to be pressed first, before the space bar has been pressed.
-                // Space can only trigger when it's the only key pressed, or the control key has been pressed.
-                // We register all the key down/ups
+                // Shift key can only set the start time when there are not other keys pressed. 
+                // Control has to be pressed first, before the space bar has been pressed. (DONE)
+                // Space can only trigger when it's the only key pressed, or the control key has been pressed. (DONE)
+                // We register all the key down/ups (DONE)
                 // Add/remove the from a list of strings
                 // Then we see what the list holds to see what to do.
                 if (pressedKeys.Contains(e.Key) is true) return null;
@@ -55,9 +55,9 @@ namespace KaraokeOnline.Controller
                         return GetNextWordPosition(currentLocation);
                         break;
                     case "Control ": // move a single character forward
-                        int? test = GetNextAlphabetCharacterPosition(currentLocation);
-                        if (test == null) return null;
-                        return test;
+                        int? position = GetNextAlphabetCharacterPosition(currentLocation);
+                        if (position == null) return null;
+                        return position;
                         break;
                     default: break;
                 }
@@ -91,7 +91,7 @@ namespace KaraokeOnline.Controller
         }
 
         private int? GetNextWordPosition(int startLocation)
-        {            
+        {
             int? output = null;
             bool foundWhiteSpace = false;
 
@@ -125,7 +125,7 @@ namespace KaraokeOnline.Controller
                         // That's why we don't return yet.
                         foundWhiteSpace = true;
                         output = ((int)newStartLocation + i + 1);
-                    }                    
+                    }
                 }
                 else
                 {
@@ -177,7 +177,11 @@ namespace KaraokeOnline.Controller
                     // we dont have to color the line.
                     s = line;
                 }
-                markedUpLyrics.Add(new MarkupString(s));
+                if (line != "\r")
+                {
+                    markedUpLyrics.Add(new MarkupString(s));
+
+                }
 
                 // We add 1 to include the removed \n
                 indexLocation += line.Length + 1;
