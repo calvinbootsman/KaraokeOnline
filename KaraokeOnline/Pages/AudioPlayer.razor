@@ -1,0 +1,140 @@
+﻿@inject IJSRuntime JSRuntime
+@using Models;
+
+<h3>AudioPlayer</h3>
+<div>
+    <InputFile @ref="inputFile" OnChange="@LoadAudioFile" />
+</div>
+
+@if (fileIsLoaded == true)
+{
+    <div>
+        <audio id="@audioPlayerID">
+            <source src="@audioUrl" type="audio/mpeg" />
+        </audio>
+    </div>
+    <div>
+        <span id="@timeDisplayId">Timer: 00:00:00</span>
+        <div>
+            @if ((audioIsPlaying == false) && (isAllowedToPlay == true))
+            {
+                <button class="btn btn-primary playerControls" @onclick="PlayClickButton">Play</button>
+            }
+
+            @if (audioIsPlaying == true)
+            {
+                <button class="btn btn-primary playerControls" @onclick="PauseClickButton">Pause</button>
+                <button class="btn btn-primary playerControls" @onclick="StopClickButton">Stop</button>
+            }
+        </div>
+        <div>
+            @if (audioIsPlaying == true)
+            {
+                <button class="btn btn-primary playerControls" @onclick="() => SetPlaybackSpeed(1.0)">1.0x speed</button>
+                <button class="btn btn-primary playerControls" @onclick="() => SetPlaybackSpeed(0.75)">0.75x speed</button>
+                <button class="btn btn-primary playerControls" @onclick="() => SetPlaybackSpeed(0.5)">0.5x speed</button>
+                <button class="btn btn-primary playerControls" @onclick="() => SetPlaybackSpeed(0.25)">0.25x speed</button>
+            }
+        </div>
+    </div>
+
+
+    <!-- Should the stop button overwrite everything? probably should show a warning beforehand or smth.-->
+    <!-- For now the forward and backward buttons are not neccesary.
+    <button class="btn btn-primary" @onclick="RewindClickButton">10 second rewind</button>
+    <button class="btn btn-primary" @onclick="ForwardClickButton">10 second fast forward</button> -->
+}
+
+@if (showAudioControls == true)
+{
+    /*  play
+        pause
+        stop
+        scroll
+        speed
+        back 10 seconds
+        */
+}
+@code {
+    private InputFile? inputFile;
+    private string? audioUrl;
+    private bool showAudioControls = false;
+
+    const string audioPlayerID = "audioPlayer";
+    const string timeDisplayId = "timeDisplay";
+    public bool fileIsLoaded = false;
+    public bool audioIsPlaying = false;
+
+    private bool isAllowedToPlay = false;
+
+    private async Task LoadAudioFile()
+    {
+        audioUrl = new(await JSRuntime.InvokeAsync<string>("CreateUrlFromFile", inputFile));
+        if (audioUrl is null) return;
+        if (audioUrl == "") return;
+
+        fileIsLoaded = true;
+    }
+
+    private async void PlayClickButton()
+    {
+        if (isAllowedToPlay == false) return;
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/audioPlayer.js");
+        await jsModule.InvokeVoidAsync("PlayAudio", audioPlayerID);
+        await jsModule.InvokeVoidAsync("SubscribeToTimeUpdates", audioPlayerID, timeDisplayId);
+        audioIsPlaying = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void PauseClickButton()
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/audioPlayer.js");
+        await jsModule.InvokeVoidAsync("PauseAudio", audioPlayerID);
+        audioIsPlaying = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void StopClickButton()
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/audioPlayer.js");
+        await jsModule.InvokeVoidAsync("PauseAudio", audioPlayerID);
+        audioIsPlaying = false;
+        await InvokeAsync(StateHasChanged);
+
+        // Need to show a modal! For now just a pause.
+    }
+
+    private async void RewindClickButton()
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/audioPlayer.js");
+        await jsModule.InvokeVoidAsync("SeekAudio", audioPlayerID, -10.0);
+    }
+
+    private async void ForwardClickButton()
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/audioPlayer.js");
+        await jsModule.InvokeVoidAsync("SeekAudio", audioPlayerID, 10.0);
+    }
+
+    private async void SetPlaybackSpeed(double speed)
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/audioPlayer.js");
+        await jsModule.InvokeVoidAsync("SetPlaybackSpeed", audioPlayerID, speed);
+    }
+
+    public async void AllowAudioToPlay(bool allow)
+    {
+        isAllowedToPlay = allow;
+
+        if (audioIsPlaying == true)
+        {
+            PauseClickButton();
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+    public async Task<double> GetCurrentTime()
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/audioPlayer.js");
+        return await jsModule.InvokeAsync<double>("GetCurrentTime", audioPlayerID);
+    }
+}

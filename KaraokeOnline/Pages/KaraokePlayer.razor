@@ -129,7 +129,6 @@
         {
             var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
             await jsModule.InvokeVoidAsync("StartPlayer");
-            await InvokeAsync(StateHasChanged);
             playerState = PlayerState.Playing;
             await InvokeAsync(StateHasChanged);
         }
@@ -171,11 +170,15 @@
     }
     private async void StepClickButton()
     {
-        if ((playerState == PlayerState.Stopped) || (playerState == PlayerState.Paused))
+        for (int i = 0; i < 1000; i++)
         {
-            var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
-            await jsModule.InvokeVoidAsync("StepPlayer");
+            if ((playerState == PlayerState.Stopped) || (playerState == PlayerState.Paused))
+            {
+                var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+                await jsModule.InvokeVoidAsync("StepPlayer");
+            }
         }
+        
     }
 
     private async void StartStepClickButton()

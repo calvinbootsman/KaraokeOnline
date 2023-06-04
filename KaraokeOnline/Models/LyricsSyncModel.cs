@@ -3,7 +3,7 @@
     public class LyricsSyncModel
     {
         public LyricsSyncModel() { }
-        public List<LyricsEncoding> GetEncodedLyrics() { return new List<LyricsEncoding>(); }
+        public List<LyricsEncoding> GetEncodedLyrics() { return lyricsEncodingList; }
 
         private int encodedLength = 0;
         public void AddEncodedLyrics(int startTime, int endTime, string characters)
@@ -23,14 +23,14 @@
 
     public class LyricsEncoding
     {
-        public LyricsEncoding(int startTime, int endTime, string characters)
+        public LyricsEncoding(double startTime, double endTime, string characters)
         {
             StartTime = startTime;
             EndTime = endTime;
             Characters = characters;
         }
-        public int StartTime { get; }
-        public int EndTime { get; }
+        public double StartTime { get; }
+        public double EndTime { get; }
         public string Characters { get; }
     }
 }

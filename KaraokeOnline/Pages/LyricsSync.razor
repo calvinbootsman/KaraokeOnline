@@ -1,6 +1,7 @@
 ﻿@page "/LyricsSync"
 @using Controller
 
+<AudioPlayer @ref="audioPlayerRef"/>
 @if (currentState == SyncState.InputText)
 {
     <div>
@@ -59,8 +60,8 @@
         * so this means:
         *      - shift is start time
         *      - spacebar is end time
-        */
-
+    */
+    AudioPlayer? audioPlayerRef;
     private const int SHOW_LINES = 6;
 
     private enum SyncState
@@ -94,15 +95,29 @@
         {
             lyricsAsLines.Add(new MarkupString(s));
         }
+
         syncController.AddLyrics(lyricsText);
         currentState = SyncState.SyncText;
+
+        if(audioPlayerRef is not null)
+        {            
+            audioPlayerRef.AllowAudioToPlay(true);
+        }
+
         UpdateLyricScroller();
     }
 
-    private void KeyPress(KeyboardEventArgs e)
+    private async void KeyPress(KeyboardEventArgs e)
     {
-        int? nextCursorLocation = syncController.OnKeyAction(e, 0, cursorLocation);
+        if (audioPlayerRef is null) return;
+        if (audioPlayerRef.audioIsPlaying == false) return;
+
+        double currentTime = 0;
+        currentTime = await audioPlayerRef.GetCurrentTime();
+
+        int? nextCursorLocation = syncController.OnKeyAction(e, currentTime, cursorLocation);
         if (nextCursorLocation == null) return;
+
         cursorLocation = nextCursorLocation.Value;
         UpdateLyricScroller();
     }

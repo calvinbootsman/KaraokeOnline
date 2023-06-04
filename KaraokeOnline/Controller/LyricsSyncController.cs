@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using KaraokeOnline.Models;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.ComponentModel;
@@ -18,7 +19,8 @@ namespace KaraokeOnline.Controller
             lyrics = input;
         }
 
-        public int? OnKeyAction(KeyboardEventArgs e, int currentTime, int currentLocation)
+        private LyricsSyncModel syncModel = new LyricsSyncModel();
+        public int? OnKeyAction(KeyboardEventArgs e, double currentTime, int currentLocation)
         {
             if (e.Type == "keydown")
             {
@@ -47,31 +49,59 @@ namespace KaraokeOnline.Controller
                     Combination += key;
                 }
 
+                int? newLocation = currentLocation;
+                bool newLocationCheck = true;
                 switch (Combination)
                 {
-                    case "Shift ": // start time of encoded lyric
+                    case "Shift ":  // set the lastEndTime to current time
+                                    // this can be used in case there's a long pause in the audio.
+                                    // might have to be replaced with something else. 
+                        newLocationCheck = false;
                         break;
                     case " ": // move a word forward
-                        return GetNextWordPosition(currentLocation);
+                        newLocation = GetNextWordPosition(currentLocation);
                         break;
                     case "Control ": // move a single character forward
-                        int? position = GetNextAlphabetCharacterPosition(currentLocation);
-                        if (position == null) return null;
-                        return position;
+                        newLocation = GetNextAlphabetCharacterPosition(currentLocation);
                         break;
                     default: break;
                 }
+                // error checking
+                if (newLocation == null) return null;
+                if (newLocationCheck == true){
+                    if (newLocation <= currentLocation) return null;
+                }
 
-                return null;
+                string substring = "";
+                if (newLocationCheck == true)
+                {
+                    substring = lyrics.Substring(currentLocation, (int)(newLocation - currentLocation));
+                }
+                
+                double lastEndTime = 0;
+
+                if (syncModel.GetEncodedLyrics().Count() != 0)
+                {
+                    lastEndTime = syncModel.GetEncodedLyrics().Last().EndTime;
+                }
+
+                // TODO: maybe only check if any of them are 0, otherwise currentTime has to be larger than lastEndTime?
+                if (currentTime >= lastEndTime)
+                {
+                    LyricsEncoding encoding = new LyricsEncoding(lastEndTime, currentTime, substring);
+                    syncModel.AddEncodedLyrics(encoding);
+                    return newLocation;
+                }
             }
             else
             {
                 if (pressedKeys.Contains(e.Key) is true)
                 {
                     pressedKeys.Remove(e.Key);
-                }
-                return null;
+                }                
             }
+
+            return null;
         }
 
         private int? GetNextAlphabetCharacterPosition(int startLocation)
