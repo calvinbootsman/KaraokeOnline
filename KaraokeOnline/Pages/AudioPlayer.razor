@@ -56,15 +56,17 @@
         */
 }
 @code {
+    public bool fileIsLoaded = false;
+    public bool audioIsPlaying = false;
+    public string? audioUrl;
+
     private InputFile? inputFile;
-    private string? audioUrl;
+    
     private bool showAudioControls = false;
 
     const string audioPlayerID = "audioPlayer";
     const string timeDisplayId = "timeDisplay";
-    public bool fileIsLoaded = false;
-    public bool audioIsPlaying = false;
-
+    
     private bool isAllowedToPlay = false;
 
     private async Task LoadAudioFile()

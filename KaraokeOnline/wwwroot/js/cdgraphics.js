@@ -576,6 +576,8 @@ CDGPlayer.prototype.init = function (canvas) {
     this.updater = null;
     this.startTime = 0;
 };
+
+
 CDGPlayer.prototype.load = async function (url) {
     let succeeded = false;
     await $.ajax({

@@ -184,14 +184,14 @@ namespace KaraokeOnline.Controller
                 if ((line.Length + indexLocation) < location)
                 {
                     // we may encapsulate the whole line in a red color!
-                    s += "<span style=\"color:red;\">";
+                    s += "<span style=\"background:red; -webkit-background-clip: text;\">";
                     s += line;
                     s += "</span>";
                 }
                 else if (indexLocation < location)
                 {
                     // we can partially color the line
-                    s += "<span style=\"color:red;\">";
+                    s += "<span style=\"background:red; -webkit-background-clip: text;\">";
                     int length = line.Length;
                     for (int i = 0; i < length; i++)
                     {
