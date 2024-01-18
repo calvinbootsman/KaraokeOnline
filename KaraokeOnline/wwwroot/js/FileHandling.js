@@ -1,4 +1,4 @@
-﻿window.CreateUrlFromFile = (inputElem) => {
+﻿export function CreateUrlFromFile (inputElem)  {
     // Todo: make this work with the new proper way with audiocontext and stuff.
     if ("srcObject" in Audio) {
         const audioCtx = new AudioContext();
