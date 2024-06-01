@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace KaraokeOnline.Controller
@@ -19,10 +20,11 @@ namespace KaraokeOnline.Controller
             lyrics = input;
         }
 
-        private LyricsSyncModel syncModel = new LyricsSyncModel();
+        private LyricsSyncModel syncModel = new LyricsSyncModel("[{\"StartTime\":0,\"EndTime\":0.02322,\"Characters\":\"I\\u0027m \"},{\"StartTime\":0.02322,\"EndTime\":0.167337,\"Characters\":\"hurting, \"},{\"StartTime\":0.167337,\"EndTime\":0.333321,\"Characters\":\"baby, \"},{\"StartTime\":0.333321,\"EndTime\":0.504802,\"Characters\":\"I\\u0027m \"},{\"StartTime\":0.504802,\"EndTime\":0.697218,\"Characters\":\"broken \"},{\"StartTime\":0.697218,\"EndTime\":0.882519,\"Characters\":\"down\\r\\n\"},{\"StartTime\":0.882519,\"EndTime\":1.242423,\"Characters\":\"I \"},{\"StartTime\":1.242423,\"EndTime\":1.525475,\"Characters\":\"need \"},{\"StartTime\":1.525475,\"EndTime\":1.693108,\"Characters\":\"your \"},{\"StartTime\":1.693108,\"EndTime\":2.488091,\"Characters\":\"loving, \"},{\"StartTime\":2.488091,\"EndTime\":2.857064,\"Characters\":\"loving\\r\\n\"},{\"StartTime\":2.857064,\"EndTime\":3.352362,\"Characters\":\"I \"},{\"StartTime\":3.352362,\"EndTime\":3.803773,\"Characters\":\"need \"},{\"StartTime\":3.803773,\"EndTime\":4.015081,\"Characters\":\"it \"},{\"StartTime\":4.015081,\"EndTime\":4.194483,\"Characters\":\"now\\r\\n\"},{\"StartTime\":4.194483,\"EndTime\":4.392535,\"Characters\":\"When \"},{\"StartTime\":4.392535,\"EndTime\":4.595682,\"Characters\":\"I\\u0027m \"},{\"StartTime\":4.595682,\"EndTime\":4.819489,\"Characters\":\"without \"},{\"StartTime\":4.819489,\"EndTime\":5.008402,\"Characters\":\"you\\r\\n\"},{\"StartTime\":5.008402,\"EndTime\":5.453322,\"Characters\":\"I\\u0027m \"},{\"StartTime\":5.453322,\"EndTime\":5.640479,\"Characters\":\"something \"},{\"StartTime\":5.640479,\"EndTime\":5.871666,\"Characters\":\"weak\\r\\n\"},{\"StartTime\":5.871666,\"EndTime\":6.052179,\"Characters\":\"You \"},{\"StartTime\":6.052179,\"EndTime\":6.255516,\"Characters\":\"got \"},{\"StartTime\":6.255516,\"EndTime\":6.463116,\"Characters\":\"me \"},{\"StartTime\":6.463116,\"EndTime\":6.671137,\"Characters\":\"begging, \"},{\"StartTime\":6.671137,\"EndTime\":6.881581,\"Characters\":\"begging\\r\\n\"},{\"StartTime\":6.881581,\"EndTime\":7.092183,\"Characters\":\"I\\u0027m \"},{\"StartTime\":7.092183,\"EndTime\":7.317681,\"Characters\":\"on \"},{\"StartTime\":7.317681,\"EndTime\":7.476717,\"Characters\":\"my \"},{\"StartTime\":7.476717,\"EndTime\":7.673499,\"Characters\":\"knees\\r\\n\\r\\n\"},{\"StartTime\":7.673499,\"EndTime\":8.084736,\"Characters\":\"I \"},{\"StartTime\":8.084736,\"EndTime\":8.284902,\"Characters\":\"don\\u0027t \"},{\"StartTime\":8.284902,\"EndTime\":8.491297,\"Characters\":\"wanna \"},{\"StartTime\":8.491297,\"EndTime\":8.685828,\"Characters\":\"be \"},{\"StartTime\":8.685828,\"EndTime\":8.915855,\"Characters\":\"needing \"},{\"StartTime\":8.915855,\"EndTime\":9.102569,\"Characters\":\"your \"},{\"StartTime\":9.102569,\"EndTime\":9.328107,\"Characters\":\"love\\r\\n\"},{\"StartTime\":9.328107,\"EndTime\":9.52661,\"Characters\":\"I \"},{\"StartTime\":9.52661,\"EndTime\":9.742016,\"Characters\":\"just \"},{\"StartTime\":9.742016,\"EndTime\":9.949139,\"Characters\":\"wanna \"},{\"StartTime\":9.949139,\"EndTime\":10.162128,\"Characters\":\"be \"},{\"StartTime\":10.162128,\"EndTime\":10.37024,\"Characters\":\"deep \"},{\"StartTime\":10.37024,\"EndTime\":10.57989,\"Characters\":\"in \"},{\"StartTime\":10.57989,\"EndTime\":10.892449,\"Characters\":\"your \"},{\"StartTime\":10.892449,\"EndTime\":11.166543,\"Characters\":\"love\\r\\n\"},{\"StartTime\":11.166543,\"EndTime\":11.474055,\"Characters\":\"And \"},{\"StartTime\":11.474055,\"EndTime\":11.746206,\"Characters\":\"it\\u0027s \"},{\"StartTime\":11.746206,\"EndTime\":11.971848,\"Characters\":\"killing \"},{\"StartTime\":11.971848,\"EndTime\":12.18108,\"Characters\":\"me \"},{\"StartTime\":12.18108,\"EndTime\":12.396998,\"Characters\":\"when \"},{\"StartTime\":12.396998,\"EndTime\":12.605179,\"Characters\":\"you\\u0027re \"},{\"StartTime\":12.605179,\"EndTime\":12.819227,\"Characters\":\"away, \"},{\"StartTime\":12.819227,\"EndTime\":13.01319,\"Characters\":\"ooh, \"},{\"StartTime\":13.01319,\"EndTime\":13.36781,\"Characters\":\"baby\\r\\n\\u0027\"},{\"StartTime\":13.36781,\"EndTime\":13.743467,\"Characters\":\"Cause \"},{\"StartTime\":13.743467,\"EndTime\":14.070767,\"Characters\":\"I \"},{\"StartTime\":14.070767,\"EndTime\":14.507253,\"Characters\":\"really \"},{\"StartTime\":14.507253,\"EndTime\":14.807864,\"Characters\":\"don\\u0027t \"},{\"StartTime\":14.807864,\"EndTime\":15.193503,\"Characters\":\"care \"}]");
+        private int counter = 0;
         public int? OnKeyAction(KeyboardEventArgs e, double currentTime, int currentLocation)
         {
-            if (e.Type == "keydown")
+             if (e.Type == "keydown")
             {
                 // Shift key can only set the start time when there are not other keys pressed. 
                 // Control has to be pressed first, before the space bar has been pressed. (DONE)
@@ -43,6 +45,7 @@ namespace KaraokeOnline.Controller
                 }
 
                 if (e.Key != " ") return null;
+
                 string Combination = "";
                 foreach (string key in pressedKeys)
                 {
@@ -88,8 +91,15 @@ namespace KaraokeOnline.Controller
                 // TODO: maybe only check if any of them are 0, otherwise currentTime has to be larger than lastEndTime?
                 if (currentTime >= lastEndTime)
                 {
-                    LyricsEncoding encoding = new LyricsEncoding(lastEndTime, currentTime, substring);
+                     LyricsEncoding encoding = new LyricsEncoding(lastEndTime, currentTime, substring);
                     syncModel.AddEncodedLyrics(encoding);
+                    counter++;
+
+                    if (counter == 60)
+                    {
+                        var test = System.Text.Json.JsonSerializer.Serialize(syncModel.GetEncodedLyrics());
+                         Debug.WriteLine(test);
+                    }
                     return newLocation;
                 }
             }
@@ -123,7 +133,7 @@ namespace KaraokeOnline.Controller
         private int? GetNextWordPosition(int startLocation)
         {
             int? output = null;
-            bool foundWhiteSpace = false;
+            bool foundWhiteSpace = false; 
 
             // First go the first next chararcter position
             // Because that's whehre the next word starts.

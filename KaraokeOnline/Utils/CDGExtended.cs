@@ -9,6 +9,16 @@ namespace KaraokeOnline.Utils
          *    There needs to be a file where we can create a font 
          *  https://fonts.google.com/specimen/VT323?preview.text=HIJKLMNOPQRSTUVWXYZ&preview.size=113&preview.text_type=custom&category=Monospace&classification=Monospace
          */
+        public List<byte[]> CleanScreen()
+        {
+            List<byte[]> output = new List<byte[]>();
+            for (byte i = 0; i < 8; i++)
+            {
+                output.Add(MemoryPreset(0, i));   
+            }
+
+            return output;
+        }
         public List<byte[]> LetterA()
         {
             return new List<byte[]> {

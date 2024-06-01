@@ -1,5 +1,6 @@
 ﻿export function PlayAudio(ElementId) {
     var x = document.getElementById(ElementId);
+    x.volume = 0.2;
     x.play();
 }
 export function PauseAudio(ElementId) {

@@ -72,7 +72,7 @@
     private async Task LoadAudioFile()
     {
         var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/FileHandling.js");
-        audioUrl = (await jsModule.InvokeAsync<string>("CreateUrlFromFile", inputFile));
+        audioUrl = await jsModule.InvokeAsync<string>("CreateUrlFromFile", inputFile);
         if (audioUrl is null) return;
         if (audioUrl == "") return;
 
