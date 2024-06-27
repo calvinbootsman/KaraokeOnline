@@ -12,6 +12,15 @@ export async function LoadFile(file) {
     return succeeded;
 };
 
+export function LoadData(data) {
+    var succeeded = false;
+    if (player != null) {
+        succeeded = player.loadData(data);
+    }
+
+    return succeeded
+}
+
 export function StartPlayer() {
     if (player != null) {
         player.play();
@@ -546,15 +555,21 @@ CDGParser.prototype.stringToByteArray = function (data) {
 CDGParser.prototype.parseDataString = function (data) {
     var instructions = new Array();
     var bytes = this.stringToByteArray(data);
+    instructions = this.parseDataBytes(bytes)
+
+    return instructions;
+};
+
+CDGParser.prototype.parseDataBytes = function (bytes) {
+    var instructions = new Array();
     for (var offset = 0; offset < bytes.length; offset += this.PACKET_SIZE) {
         var instruction = this.parseOne(bytes, offset);
         if (instruction != null) {
             instructions.push(instruction);
         }
     }
-    return instructions;
-};
-
+    return instructions
+}
 
 /************************************************
  *
@@ -600,6 +615,16 @@ CDGPlayer.prototype.load = async function (url) {
     return succeeded;
 };
 
+
+CDGPlayer.prototype.loadData = function (data) {
+    let succeeded = false;
+    var parser = new CDGParser();
+    this.instructions = parser.parseDataBytes(data);
+    this.pc = 0;
+    succeeded = true;
+
+    return succeeded;
+};
 CDGPlayer.prototype.render = function () {
     this.context.renderFrameDebug(this.canvas);
 };

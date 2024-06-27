@@ -33,20 +33,72 @@ namespace KaraokeOnline.Models
 
         private List<LyricsEncoding> lyricsEncodingList = new List<LyricsEncoding>();
 
-        public void GenerateCDG()
+        public List<byte[]> GenerateCDG()
         {
             CDGExtended CDGCommands = new CDGExtended();
             List<byte[]> cdg = new List<byte[]>();
             //Clear screen.
-            cdg.AddRange(CDGCommands.CleanScreen());
+            cdg.Add(CDGCommands.GetFileBytes(100));
+            return cdg;
+            /*
+            cdg.Add(CDGCommands.LoadColorTableLow(new ushort[] { 0x30, 0, 0, 0, 0, 0, 0, 0 }));
+            cdg.Add(CDGCommands.LoadColorTableHigh(new ushort[] { 0, 0, 0, 0, 0, 0, 0, 0 }));
+            cdg.Add(CDGCommands.MemoryPreset(0, 0));
+            cdg.Add(CDGCommands.MemoryPreset(0, 1));
+            cdg.Add(CDGCommands.MemoryPreset(0, 2));
+            cdg.Add(CDGCommands.MemoryPreset(0, 3));
+            cdg.Add(CDGCommands.MemoryPreset(0, 4));
+            cdg.Add(CDGCommands.MemoryPreset(0, 5));
+            cdg.Add(CDGCommands.MemoryPreset(0, 6));
+            cdg.Add(CDGCommands.MemoryPreset(0, 7));
+            cdg.Add(CDGCommands.MemoryPreset(0, 8));
+            cdg.Add(CDGCommands.MemoryPreset(0, 9));
+            cdg.Add(CDGCommands.MemoryPreset(0, 10));
+            cdg.Add(CDGCommands.MemoryPreset(0, 11));
+            cdg.Add(CDGCommands.MemoryPreset(0, 12));
+            cdg.Add(CDGCommands.MemoryPreset(0, 13));
+            */
+            // Split the encoded lyrics into lines.
+            List<List<LyricsEncoding>> encodedLyricsLines = new List<List<LyricsEncoding>>();
 
-            /*  1: Split the encoded lyrincs into lines 
-             *  2: When making the pages of the encoded lyrics, first check where endTime != startTime of the next one.
-             *     This means that there should be a page break. 
-                3: Create the pages containing at most 4 - 6 lines (t.b.d.)
-                4: Create the timings for all the pages
+            /*  1: Split the encoded lyrics into lines 
+             *  2: 4 - 6 lines per page
+             *  3: When a line is "done", and the next line has started, 
+             *     it will be removed and replaced by a new line.
              */
+            int lineCount = 0;
 
+            // 1: Split the encoded lyrics into lines.
+            for (int i = 0; i < lyricsEncodingList.Count; i++)
+            {
+                LyricsEncoding sublyrics = lyricsEncodingList[i];
+                encodedLyricsLines.Add(new List<LyricsEncoding>());
+                encodedLyricsLines[i].Add(sublyrics);
+
+                // Check for end of line
+                if (!sublyrics.Characters.EndsWith('\n') && !sublyrics.Characters.EndsWith("\r"))
+                {
+                    lineCount++;
+                }
+            }
+            if (encodedLyricsLines.Count > 0)
+            {
+                var firstLine = encodedLyricsLines[0];
+                string line = "";
+                foreach (var sub in firstLine)
+                {
+                    line += sub.Characters;
+                }
+            }
+
+            cdg.AddRange(CDGCommands.LetterA(0, 0));
+            cdg.AddRange(CDGCommands.LetterB(0, 1));
+            cdg.AddRange(CDGCommands.LetterC(0, 2));
+
+            return cdg;
+            // 2: 4-6 lines per page.
+           
+            
         }
     }
 
@@ -62,4 +114,5 @@ namespace KaraokeOnline.Models
         public double EndTime { get; }
         public string Characters { get; }
     }
+
 }

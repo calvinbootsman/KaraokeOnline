@@ -12,6 +12,11 @@ namespace KaraokeOnline.Models
             CDGFileLocation = cdgFileLocation;
             Mp3FileLocation = mp3FileLocation;
         }
+        public KaraokePlayerModel(byte[] cdgBytes)
+        {
+            AutoLoadCdgPlayer = true;
+            CDGBytes = cdgBytes;            
+        }
 
         public KaraokePlayerModel(InputFile audioFile, InputFile cdgFile)
         {
@@ -29,5 +34,7 @@ namespace KaraokeOnline.Models
         public bool AutoLoadCdgPlayer { get; } = false;
         public InputFile? AudioFile { get; }
         public InputFile? CDGFile { get;  }
+
+        public byte[]? CDGBytes { get; }
     }
 }

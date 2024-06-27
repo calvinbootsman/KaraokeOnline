@@ -17,6 +17,18 @@
 -->
 
 @code {
-    private KaraokePlayerModel playerModel = new KaraokePlayerModel("./cdg/Maroon 5 - Sugar.cdg", "./cdg/Maroon 5 - Sugar.cdg");
+//    private KaraokePlayerModel playerModel = new KaraokePlayerModel("./cdg/Maroon 5 - Sugar.cdg", "./cdg/Maroon 5 - Sugar.cdg");
+    private KaraokePlayerModel? playerModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        LyricsSyncModel lyricsSync = new LyricsSyncModel();
+        List<byte[]> bytes = lyricsSync.GenerateCDG();
+        byte[] data = bytes.SelectMany(b => b).ToArray();
+
+        playerModel = new KaraokePlayerModel(data);
+
+        await Task.CompletedTask;
+    }
 
 }

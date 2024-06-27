@@ -106,9 +106,26 @@
                 cdgFileLocation = karaokeModel.CDGFileLocation;
                 LoadClickButton();
             }
+
+            if (karaokeModel.CDGBytes is not null)
+            {
+                LoadBytes(karaokeModel.CDGBytes);
+            }
         }
     }
-
+    private async void LoadBytes(byte[] hmm)
+    {
+        var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");
+        if (await jsModule.InvokeAsync<bool>("LoadData", hmm) == true)
+        {
+            playerState = PlayerState.Stopped;
+        }
+        else
+        {
+            playerState = PlayerState.NoFileIsLoaded;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
     private async void LoadClickButton()
     {
         var jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/cdgraphics.js");

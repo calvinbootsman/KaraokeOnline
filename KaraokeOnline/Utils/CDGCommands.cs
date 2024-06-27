@@ -125,7 +125,7 @@ public class CDGCommands
         return value;
     }
     // Define the structures for CD+G instructions
-    public void CreateScreen()
+    public byte[] CreateScreen()
     {
         List<byte[]> data = new List<byte[]>()
         {
@@ -162,6 +162,8 @@ public class CDGCommands
                 Console.Write($"0x{b} ");
             }
         }
+
+        return data.SelectMany(b => b).ToArray();
     }
 
     public void LogFile(int maxInstructions)
@@ -180,6 +182,24 @@ public class CDGCommands
 
     }
 
+    public byte[] GetFileBytes(int maxInstructions)
+    {
+        string basePath = AppContext.BaseDirectory;
+
+        // Combine the base path with the relative path to the file
+        string path = Path.Combine(basePath, "wwwroot", "cdg", "private_eyes.cdg");
+
+        byte[] data = File.ReadAllBytes(path);
+
+        int max = maxInstructions * 24;
+
+        if (data.Length > max) { 
+            return data[0..max];
+        }
+
+        return new byte[1];
+        
+    }
     public struct CDG_Tile
     {
         public byte color0;
